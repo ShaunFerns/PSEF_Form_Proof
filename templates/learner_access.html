@@ -128,6 +128,15 @@
             </div>
         </div>
 
+        <!-- Draft Description Field -->
+        <div style="margin-top: 1rem;">
+            <label for="draft_description">
+                Draft Description (to help you identify this draft later):
+            </label>
+            <input type="text" id="draft_description" name="draft_description" maxlength="100" style="width: 100%;"
+                   value="{{ draft_description }}">
+        </div>
+
         <button type="submit" name="action" value="save">💾 Save as Draft</button>
         <button type="submit" name="action" value="submit">✅ Submit</button>
     </form>

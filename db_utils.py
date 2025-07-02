@@ -13,11 +13,13 @@ def init_db():
             internationalisation_qe TEXT,
             evidence_files TEXT,
             created_at TEXT,
-            status TEXT DEFAULT "draft"
+            status TEXT DEFAULT "draft",
+            draft_description TEXT
         )
     ''')
     conn.commit()
     conn.close()
+
 
 # Initialise database immediately when imported
 init_db()

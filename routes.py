@@ -15,17 +15,27 @@ def register_routes(app):
 
     @app.route('/learner-access', methods=['GET', 'POST'])
     def learner_access_form():
+        draft_id = request.args.get('draft_id')
         draft = None
-        conn = sqlite3.connect('psef.db')
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        c.execute('SELECT * FROM learner_access WHERE status = "draft" ORDER BY created_at DESC LIMIT 1')
-        draft = c.fetchone()
-        conn.close()
+        if draft_id:
+            conn = sqlite3.connect('psef.db')
+            conn.row_factory = sqlite3.Row
+            c = conn.cursor()
+            c.execute('SELECT * FROM learner_access WHERE id = ? AND status = "draft"', (draft_id,))
+            draft = c.fetchone()
+            conn.close()
+        else:
+            conn = sqlite3.connect('psef.db')
+            conn.row_factory = sqlite3.Row
+            c = conn.cursor()
+            c.execute('SELECT * FROM learner_access WHERE status = "draft" ORDER BY created_at DESC LIMIT 1')
+            draft = c.fetchone()
+            conn.close()
 
         if request.method == 'POST':
             action = request.form.get('action')
             programme_description = request.form.get('programme_description')
+            draft_description = request.form.get('draft_description') if action == "save" else None
 
             pathways_qa_list = request.form.getlist('pathways_qa')
             pathways_qe_list = request.form.getlist('pathways_qe')
@@ -57,11 +67,10 @@ def register_routes(app):
             if status == "submitted":
                 missing_qa = [label for label in required_qa_labels if label not in pathways_qa_list]
                 if missing_qa:
-                    errors.append(f"All QA checkboxes must be checked before submission. Missing: {', '.join(missing_qa)}.")
-
+                    errors.append(f"All QA checkboxes must be checked. Missing: {', '.join(missing_qa)}.")
                 missing_files = [label for label in required_qa_labels if label not in qa_uploaded_files]
                 if missing_files:
-                    errors.append(f"Evidence files are required for: {', '.join(missing_files)} before submission.")
+                    errors.append(f"Evidence files required for: {', '.join(missing_files)} before submission.")
 
             qe_file_fields = {
                 'qe_file_map_of_opportunities': '',
@@ -88,7 +97,8 @@ def register_routes(app):
                                        pathways_qa_list=pathways_qa_list,
                                        pathways_qe_list=pathways_qe_list,
                                        internationalisation_qa_list=internationalisation_qa_list,
-                                       internationalisation_qe_list=internationalisation_qe_list)
+                                       internationalisation_qe_list=internationalisation_qe_list,
+                                       draft_description=draft_description or '')
 
             conn = sqlite3.connect('psef.db')
             c = conn.cursor()
@@ -102,7 +112,8 @@ def register_routes(app):
                         internationalisation_qe = ?,
                         evidence_files = ?,
                         created_at = ?,
-                        status = ?
+                        status = ?,
+                        draft_description = ?
                     WHERE id = ?
                 ''', (
                     programme_description,
@@ -113,6 +124,7 @@ def register_routes(app):
                     '; '.join(evidence_files),
                     datetime.now().isoformat(),
                     status,
+                    draft_description,
                     draft['id']
                 ))
             else:
@@ -125,8 +137,9 @@ def register_routes(app):
                         internationalisation_qe,
                         evidence_files,
                         created_at,
-                        status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        status,
+                        draft_description
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     programme_description,
                     ', '.join(pathways_qa_list),
@@ -135,7 +148,8 @@ def register_routes(app):
                     ', '.join(internationalisation_qe_list),
                     '; '.join(evidence_files),
                     datetime.now().isoformat(),
-                    status
+                    status,
+                    draft_description
                 ))
             conn.commit()
             conn.close()
@@ -147,15 +161,40 @@ def register_routes(app):
                                pathways_qa_list=draft['pathways_qa'].split(', ') if draft and draft['pathways_qa'] else [],
                                pathways_qe_list=draft['pathways_qe'].split(', ') if draft and draft['pathways_qe'] else [],
                                internationalisation_qa_list=draft['internationalisation_qa'].split(', ') if draft and draft['internationalisation_qa'] else [],
-                               internationalisation_qe_list=draft['internationalisation_qe'].split(', ') if draft and draft['internationalisation_qe'] else [])
+                               internationalisation_qe_list=draft['internationalisation_qe'].split(', ') if draft and draft['internationalisation_qe'] else [],
+                               draft_description=draft['draft_description'] if draft and draft['draft_description'] else '')
+
+    @app.route('/drafts')
+    def drafts():
+        conn = sqlite3.connect('psef.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('SELECT * FROM learner_access WHERE status = "draft" ORDER BY created_at DESC')
+        drafts = c.fetchall()
+        conn.close()
+        return render_template('drafts.html', drafts=drafts)
+
+    @app.route('/edit_draft/<int:draft_id>')
+    def edit_draft(draft_id):
+        return redirect(url_for('learner_access_form', draft_id=draft_id))
+
+    @app.route('/delete_draft/<int:draft_id>', methods=['POST'])
+    def delete_draft(draft_id):
+        conn = sqlite3.connect('psef.db')
+        c = conn.cursor()
+        c.execute('DELETE FROM learner_access WHERE id = ? AND status = "draft"', (draft_id,))
+        conn.commit()
+        conn.close()
+        flash("Draft deleted successfully.")
+        return redirect(url_for('drafts'))
+
+    @app.route('/success')
+    def success():
+        return "<h2>Form processed successfully ✅</h2><p><a href='/learner-access'>Submit Another</a> | <a href='/dashboard'>View Dashboard</a> | <a href='/drafts'>View Drafts</a></p>"
 
     @app.route('/uploads/<filename>')
     def uploaded_file(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-    @app.route('/success')
-    def success():
-        return "<h2>Form processed successfully ✅</h2><p><a href='/learner-access'>Submit Another</a> | <a href='/dashboard'>View Dashboard</a></p>"
 
     @app.route('/dashboard')
     def dashboard():
@@ -231,3 +270,4 @@ def register_routes(app):
             as_attachment=True,
             download_name=f'PSEF_Evidence_Files_{entry_id}.zip'
         )
+
