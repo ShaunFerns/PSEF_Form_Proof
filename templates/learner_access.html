@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Section 4.2.1 – Learner Access</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li style="color: red;">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <label for="programme_description">
+            Describe how the Programme under review will enable and enhance access for all:
+            <span id="word_count">(0/500 words)</span>
+        </label>
+        <textarea id="programme_description" name="programme_description" rows="10" required></textarea>
+
+        <!-- Section (a) Pathways to TU Dublin -->
+        <div class="section-block">
+            <h3>(a) Pathways to TU Dublin</h3>
+
+            <div class="checkbox-group">
+                <h4>Quality Assurance (QA) Evidence</h4>
+                <label><input type="checkbox" name="pathways_qa" value="Map of routes into programme"> Map of routes into the programme</label>
+                <label><input type="checkbox" name="pathways_qa" value="Equitable access with RPL"> Equitable access approach with RPL</label>
+            </div>
+
+            <div class="checkbox-group">
+                <h4>Quality Enhancement (QE) Evidence</h4>
+                <label><input type="checkbox" name="pathways_qe" value="Map of opportunities beyond programme"> Map of educational opportunities beyond the programme</label>
+                <label><input type="checkbox" name="pathways_qe" value="Barrier modules reduced"> Barrier modules identified and reduced</label>
+                <label><input type="checkbox" name="pathways_qe" value="Collaboration with FE partners"> Collaboration with FE partners</label>
+                <label><input type="checkbox" name="pathways_qe" value="Collaborative programme development"> Collaborative programme development actions</label>
+            </div>
+        </div>
+
+        <!-- Section (b) Internationalisation -->
+        <div class="section-block">
+            <h3>(b) Internationalisation</h3>
+
+            <div class="checkbox-group">
+                <h4>Quality Assurance (QA) Evidence</h4>
+                <label><input type="checkbox" name="internationalisation_qa" value="International recruitment targets"> Clear, realistic international recruitment targets</label>
+            </div>
+
+            <div class="checkbox-group">
+                <h4>Quality Enhancement (QE) Evidence</h4>
+                <label><input type="checkbox" name="internationalisation_qe" value="Qualification equivalency applied"> Qualification equivalency applied</label>
+                <label><input type="checkbox" name="internationalisation_qe" value="Orientation for international learners"> Orientation and induction for international learners</label>
+                <label><input type="checkbox" name="internationalisation_qe" value="Supports: bridging, language, skills"> Supports: bridging modules, language support, academic skills</label>
+                <label><input type="checkbox" name="internationalisation_qe" value="Culturally inclusive curriculum"> Culturally inclusive curriculum underpins programme</label>
+            </div>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+<div class="instructions">
+    <h2>Guidance – Section 4.2.1 Learner Access</h2>
+    <p>Describe how the Programme under review will enable and enhance access for all learners, informed by:</p>
+    <ul>
+        <li><a href="https://www.tudublin.ie/intranet/education-model/" target="_blank"><strong>UEM Fundamental 3</strong></a>: Diversity of entry routes (race, ethnicity, CAO/non-CAO, non-standard, socio-economic)</li>
+        <li><a href="https://www.tudublin.ie/intranet/education-model/" target="_blank"><strong>UEM Fundamental 4</strong></a>: Learner choice, including exit routes</li>
+        <li>Equality of opportunity, including Recognition of Prior Learning (RPL)</li>
+        <li>TU Dublin/Sector internationalisation guidelines</li>
+    </ul>
+    <p>Complete the QA and QE evidence checklists under each section:</p>
+    <ul>
+        <li>(a) Pathways to TU Dublin</li>
+        <li>(b) Internationalisation</li>
+    </ul>
+</div>
+
+<script>
+    const textarea = document.getElementById('programme_description');
+    const wordCount = document.getElementById('word_count');
+
+    textarea.addEventListener('input', () => {
+        const words = textarea.value.trim().split(/\s+/).filter(Boolean);
+        wordCount.textContent = `(${words.length}/500 words)`;
+        if (words.length > 500) {
+            textarea.value = words.slice(0, 500).join(' ');
+            wordCount.textContent = "(500/500 words)";
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+
