@@ -15,11 +15,12 @@
     {% endwith %}
 
     <form method="POST" enctype="multipart/form-data">
+
         <label for="programme_description">
             Describe how the Programme under review will enable and enhance access for all:
             <span id="word_count">(0/500 words)</span>
         </label>
-        <textarea id="programme_description" name="programme_description" rows="10" required></textarea>
+        <textarea id="programme_description" name="programme_description" rows="10" required>{{ programme_description }}</textarea>
 
         <!-- Section (a) Pathways to TU Dublin -->
         <div class="section-block">
@@ -29,17 +30,19 @@
                 <h4>Quality Assurance (QA) Evidence</h4>
 
                 <label>
-                    <input type="checkbox" name="pathways_qa" value="Map of routes into programme">
+                    <input type="checkbox" name="pathways_qa" value="Map of routes into programme"
+                    {% if 'Map of routes into programme' in pathways_qa_list %}checked{% endif %}>
                     Map of routes into the programme
                 </label>
-                <label>Upload evidence for this QA:</label>
+                <label>Upload evidence:</label>
                 <input type="file" name="qa_file_map_of_routes">
 
                 <label>
-                    <input type="checkbox" name="pathways_qa" value="Equitable access with RPL">
+                    <input type="checkbox" name="pathways_qa" value="Equitable access with RPL"
+                    {% if 'Equitable access with RPL' in pathways_qa_list %}checked{% endif %}>
                     Equitable access approach with RPL
                 </label>
-                <label>Upload evidence for this QA:</label>
+                <label>Upload evidence:</label>
                 <input type="file" name="qa_file_equitable_access">
             </div>
 
@@ -47,26 +50,30 @@
                 <h4>Quality Enhancement (QE) Evidence</h4>
 
                 <label>
-                    <input type="checkbox" name="pathways_qe" value="Map of opportunities beyond programme">
-                    Map of educational opportunities beyond the programme
+                    <input type="checkbox" name="pathways_qe" value="Map of opportunities beyond programme"
+                    {% if 'Map of opportunities beyond programme' in pathways_qe_list %}checked{% endif %}>
+                    Map of opportunities beyond the programme
                 </label>
                 <input type="file" name="qe_file_map_of_opportunities">
 
                 <label>
-                    <input type="checkbox" name="pathways_qe" value="Barrier modules reduced">
-                    Barrier modules identified and reduced
+                    <input type="checkbox" name="pathways_qe" value="Barrier modules reduced"
+                    {% if 'Barrier modules reduced' in pathways_qe_list %}checked{% endif %}>
+                    Barrier modules reduced
                 </label>
                 <input type="file" name="qe_file_barrier_modules">
 
                 <label>
-                    <input type="checkbox" name="pathways_qe" value="Collaboration with FE partners">
+                    <input type="checkbox" name="pathways_qe" value="Collaboration with FE partners"
+                    {% if 'Collaboration with FE partners' in pathways_qe_list %}checked{% endif %}>
                     Collaboration with FE partners
                 </label>
                 <input type="file" name="qe_file_collaboration_fe">
 
                 <label>
-                    <input type="checkbox" name="pathways_qe" value="Collaborative programme development">
-                    Collaborative programme development actions
+                    <input type="checkbox" name="pathways_qe" value="Collaborative programme development"
+                    {% if 'Collaborative programme development' in pathways_qe_list %}checked{% endif %}>
+                    Collaborative programme development
                 </label>
                 <input type="file" name="qe_file_collaborative_development">
             </div>
@@ -80,10 +87,11 @@
                 <h4>Quality Assurance (QA) Evidence</h4>
 
                 <label>
-                    <input type="checkbox" name="internationalisation_qa" value="International recruitment targets">
-                    Clear, realistic international recruitment targets
+                    <input type="checkbox" name="internationalisation_qa" value="International recruitment targets"
+                    {% if 'International recruitment targets' in internationalisation_qa_list %}checked{% endif %}>
+                    International recruitment targets
                 </label>
-                <label>Upload evidence for this QA:</label>
+                <label>Upload evidence:</label>
                 <input type="file" name="qa_file_international_targets">
             </div>
 
@@ -91,26 +99,30 @@
                 <h4>Quality Enhancement (QE) Evidence</h4>
 
                 <label>
-                    <input type="checkbox" name="internationalisation_qe" value="Qualification equivalency applied">
+                    <input type="checkbox" name="internationalisation_qe" value="Qualification equivalency applied"
+                    {% if 'Qualification equivalency applied' in internationalisation_qe_list %}checked{% endif %}>
                     Qualification equivalency applied
                 </label>
                 <input type="file" name="qe_file_qualification_equivalency">
 
                 <label>
-                    <input type="checkbox" name="internationalisation_qe" value="Orientation for international learners">
-                    Orientation and induction for international learners
+                    <input type="checkbox" name="internationalisation_qe" value="Orientation for international learners"
+                    {% if 'Orientation for international learners' in internationalisation_qe_list %}checked{% endif %}>
+                    Orientation for international learners
                 </label>
                 <input type="file" name="qe_file_orientation">
 
                 <label>
-                    <input type="checkbox" name="internationalisation_qe" value="Supports: bridging, language, skills">
-                    Supports: bridging modules, language support, academic skills
+                    <input type="checkbox" name="internationalisation_qe" value="Supports: bridging, language, skills"
+                    {% if 'Supports: bridging, language, skills' in internationalisation_qe_list %}checked{% endif %}>
+                    Supports: bridging, language, skills
                 </label>
                 <input type="file" name="qe_file_supports">
 
                 <label>
-                    <input type="checkbox" name="internationalisation_qe" value="Culturally inclusive curriculum">
-                    Culturally inclusive curriculum underpins programme
+                    <input type="checkbox" name="internationalisation_qe" value="Culturally inclusive curriculum"
+                    {% if 'Culturally inclusive curriculum' in internationalisation_qe_list %}checked{% endif %}>
+                    Culturally inclusive curriculum
                 </label>
                 <input type="file" name="qe_file_culturally_inclusive">
             </div>
@@ -125,12 +137,11 @@
     <h2>Guidance – Section 4.2.1 Learner Access</h2>
     <p>Describe how the Programme under review will enable and enhance access for all learners, informed by:</p>
     <ul>
-        <li><a href="https://www.tudublin.ie/intranet/education-model/" target="_blank"><strong>UEM Fundamental 3</strong></a>: Diversity of entry routes (race, ethnicity, CAO/non-CAO, non-standard, socio-economic)</li>
-        <li><a href="https://www.tudublin.ie/intranet/education-model/" target="_blank"><strong>UEM Fundamental 4</strong></a>: Learner choice, including exit routes</li>
-        <li>Equality of opportunity, including Recognition of Prior Learning (RPL)</li>
-        <li>TU Dublin/Sector internationalisation guidelines</li>
+        <li><strong>UEM Fundamental 3:</strong> Entry routes, equality, diversity.</li>
+        <li><strong>UEM Fundamental 4:</strong> Learner choice, pathways.</li>
+        <li>Recognition of Prior Learning (RPL).</li>
     </ul>
-    <p>Upload evidence under QA items (required on submit). QE uploads are optional and only needed if selected.</p>
+    <p>QA evidence uploads are required on submit if QA is selected. QE uploads are optional and for supporting documentation if available.</p>
 </div>
 
 <script>
@@ -147,9 +158,3 @@
     });
 </script>
 {% endblock %}
-
-
-
-
-
-

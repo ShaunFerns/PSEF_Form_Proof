@@ -49,46 +49,57 @@ def index():
 
 @app.route('/learner-access', methods=['GET', 'POST'])
 def learner_access_form():
-    if request.method == 'POST':
-        action = request.form.get('action')  # "save" or "submit"
-        programme_description = request.form.get('programme_description')
-        if len(programme_description.split()) > 500:
-            flash('Programme description exceeds 500-word limit.')
-            return redirect(url_for('learner_access_form'))
+    draft = None
+    conn = sqlite3.connect('psef.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT * FROM learner_access WHERE status = "draft" ORDER BY created_at DESC LIMIT 1')
+    draft = c.fetchone()
+    conn.close()
 
-        # Collect QA evidence
-        pathways_qa_list = []
-        internationalisation_qa_list = []
+    if request.method == 'POST':
+        action = request.form.get('action')
+        programme_description = request.form.get('programme_description')
+
+        pathways_qa_list = request.form.getlist('pathways_qa')
+        pathways_qe_list = request.form.getlist('pathways_qe')
+        internationalisation_qa_list = request.form.getlist('internationalisation_qa')
+        internationalisation_qe_list = request.form.getlist('internationalisation_qe')
+
         evidence_files = []
 
+        # QA upload handling
         qa_file_fields = {
             'qa_file_map_of_routes': 'Map of routes into programme',
             'qa_file_equitable_access': 'Equitable access with RPL',
             'qa_file_international_targets': 'International recruitment targets'
         }
 
+        status = "draft" if action == "save" else "submitted"
+        errors = []
+
+        required_qa_labels = list(qa_file_fields.values())
+        qa_uploaded_files = []
+
         for field, label in qa_file_fields.items():
             file = request.files.get(field)
             if file and allowed_file(file.filename):
                 filename = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 evidence_files.append(filename)
-                if 'international_targets' in field:
-                    internationalisation_qa_list.append(label)
-                else:
-                    pathways_qa_list.append(label)
-            else:
-                if request.form.get('pathways_qa') == label or request.form.get('internationalisation_qa') == label:
-                    if 'international_targets' in field:
-                        internationalisation_qa_list.append(label)
-                    else:
-                        pathways_qa_list.append(label)
+                qa_uploaded_files.append(label)
 
-        # Collect QE evidence
-        pathways_qe_list = request.form.getlist('pathways_qe')
-        internationalisation_qe_list = request.form.getlist('internationalisation_qe')
+        # Validate: All QA checkboxes ticked + files uploaded
+        if status == "submitted":
+            missing_qa = [label for label in required_qa_labels if label not in pathways_qa_list]
+            if missing_qa:
+                errors.append(f"All QA checkboxes must be checked before submission. Missing: {', '.join(missing_qa)}.")
 
+            missing_files = [label for label in required_qa_labels if label not in qa_uploaded_files]
+            if missing_files:
+                errors.append(f"Evidence files are required for: {', '.join(missing_files)} before submission.")
+
+        # QE upload handling (optional)
         qe_file_fields = {
             'qe_file_map_of_opportunities': 'Map of opportunities beyond programme',
             'qe_file_barrier_modules': 'Barrier modules reduced',
@@ -99,56 +110,82 @@ def learner_access_form():
             'qe_file_supports': 'Supports: bridging, language, skills',
             'qe_file_culturally_inclusive': 'Culturally inclusive curriculum'
         }
-
-        for field, label in qe_file_fields.items():
+        for field in qe_file_fields:
             file = request.files.get(field)
             if file and allowed_file(file.filename):
                 filename = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 evidence_files.append(filename)
 
-        # Validation for submission:
-        status = "draft" if action == "save" else "submitted"
+        if errors:
+            for e in errors:
+                flash(e)
+            return render_template('learner_access.html',
+                                   programme_description=programme_description,
+                                   pathways_qa_list=pathways_qa_list,
+                                   pathways_qe_list=pathways_qe_list,
+                                   internationalisation_qa_list=internationalisation_qa_list,
+                                   internationalisation_qe_list=internationalisation_qe_list)
 
-        if status == "submitted":
-            if (('Map of routes into programme' in pathways_qa_list or
-                 'Equitable access with RPL' in pathways_qa_list or
-                 'International recruitment targets' in internationalisation_qa_list)
-                and len(evidence_files) == 0):
-                flash("You have selected QA evidence but have not uploaded any evidence files. Please upload files or save as draft.")
-                return redirect(url_for('learner_access_form'))
-
-        # Insert into DB
+        # Insert or update draft
         conn = sqlite3.connect('psef.db')
         c = conn.cursor()
-        c.execute('''
-            INSERT INTO learner_access (
+        if draft:
+            c.execute('''
+                UPDATE learner_access SET
+                    programme_description = ?,
+                    pathways_qa = ?,
+                    pathways_qe = ?,
+                    internationalisation_qa = ?,
+                    internationalisation_qe = ?,
+                    evidence_files = ?,
+                    created_at = ?,
+                    status = ?
+                WHERE id = ?
+            ''', (
                 programme_description,
-                pathways_qa,
-                pathways_qe,
-                internationalisation_qa,
-                internationalisation_qe,
-                evidence_files,
-                created_at,
+                ', '.join(pathways_qa_list),
+                ', '.join(pathways_qe_list),
+                ', '.join(internationalisation_qa_list),
+                ', '.join(internationalisation_qe_list),
+                '; '.join(evidence_files),
+                datetime.now().isoformat(),
+                status,
+                draft['id']
+            ))
+        else:
+            c.execute('''
+                INSERT INTO learner_access (
+                    programme_description,
+                    pathways_qa,
+                    pathways_qe,
+                    internationalisation_qa,
+                    internationalisation_qe,
+                    evidence_files,
+                    created_at,
+                    status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                programme_description,
+                ', '.join(pathways_qa_list),
+                ', '.join(pathways_qe_list),
+                ', '.join(internationalisation_qa_list),
+                ', '.join(internationalisation_qe_list),
+                '; '.join(evidence_files),
+                datetime.now().isoformat(),
                 status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            programme_description,
-            ', '.join(pathways_qa_list),
-            ', '.join(pathways_qe_list),
-            ', '.join(internationalisation_qa_list),
-            ', '.join(internationalisation_qe_list),
-            '; '.join(evidence_files),
-            datetime.now().isoformat(),
-            status
-        ))
+            ))
         conn.commit()
         conn.close()
 
         return redirect(url_for('success'))
 
-    return render_template('learner_access.html')
+    return render_template('learner_access.html',
+                           programme_description=draft['programme_description'] if draft else '',
+                           pathways_qa_list=draft['pathways_qa'].split(', ') if draft and draft['pathways_qa'] else [],
+                           pathways_qe_list=draft['pathways_qe'].split(', ') if draft and draft['pathways_qe'] else [],
+                           internationalisation_qa_list=draft['internationalisation_qa'].split(', ') if draft and draft['internationalisation_qa'] else [],
+                           internationalisation_qe_list=draft['internationalisation_qe'].split(', ') if draft and draft['internationalisation_qe'] else [])
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -167,6 +204,71 @@ def dashboard():
     entries = c.fetchall()
     conn.close()
     return render_template('dashboard.html', entries=entries)
+
+@app.route('/download_report/<int:entry_id>')
+def download_report(entry_id):
+    conn = sqlite3.connect('psef.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT * FROM learner_access WHERE id = ?', (entry_id,))
+    entry = c.fetchone()
+    conn.close()
+
+    if not entry:
+        return "Entry not found", 404
+
+    evidence_files = entry['evidence_files'].split('; ') if entry['evidence_files'] else []
+
+    rendered = render_template(
+        'report_template.html',
+        created_at=entry['created_at'],
+        programme_name="",
+        programme_description=entry['programme_description'],
+        pathways_qa=entry['pathways_qa'],
+        pathways_qe=entry['pathways_qe'],
+        internationalisation_qa=entry['internationalisation_qa'],
+        internationalisation_qe=entry['internationalisation_qe'],
+        evidence_files=evidence_files,
+        url_root=request.url_root
+    )
+
+    pdf = HTML(string=rendered).write_pdf()
+
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=PSEF_Report_{entry_id}.pdf'
+
+    return response
+
+@app.route('/download_zip/<int:entry_id>')
+def download_zip(entry_id):
+    conn = sqlite3.connect('psef.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT evidence_files FROM learner_access WHERE id = ?', (entry_id,))
+    entry = c.fetchone()
+    conn.close()
+
+    if not entry or not entry['evidence_files']:
+        return "No evidence files found for this entry.", 404
+
+    evidence_files = entry['evidence_files'].split('; ')
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zf:
+        for filename in evidence_files:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(file_path):
+                zf.write(file_path, arcname=filename)
+
+    zip_buffer.seek(0)
+
+    return send_from_directory(
+        directory='.',
+        path=zip_buffer,
+        as_attachment=True,
+        download_name=f'PSEF_Evidence_Files_{entry_id}.zip'
+    )
 
 # --------------------- MAIN ---------------------
 if __name__ == '__main__':

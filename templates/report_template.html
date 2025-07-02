@@ -2,45 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PSEF Submission Report</title>
+    <title>PSEF Programme Self-Evaluation Report</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 2rem; }
-        h1 { color: #004E6C; }
-        h2 { border-bottom: 1px solid #ccc; padding-bottom: 0.3rem; }
-        p { line-height: 1.6; }
-        ul { padding-left: 1.2rem; }
-        a { color: #004E6C; word-break: break-all; }
+        body {
+            font-family: "Georgia", serif;
+            margin: 2cm;
+            line-height: 1.5;
+            font-size: 12pt;
+        }
+        h1, h2, h3 {
+            color: #004E6C;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 {
+            font-size: 20pt;
+            border-bottom: 2px solid #004E6C;
+            padding-bottom: 0.2em;
+        }
+        h2 {
+            font-size: 16pt;
+        }
+        h3 {
+            font-size: 14pt;
+        }
+        p {
+            margin: 0.5em 0;
+        }
+        .title-page {
+            text-align: center;
+            margin-top: 8cm;
+        }
+        .title-page h1 {
+            border: none;
+            font-size: 24pt;
+        }
+        .title-page p {
+            font-size: 14pt;
+        }
+        .page-break { page-break-before: always; }
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 10pt;
+                color: #666;
+            }
+        }
+        ul {
+            padding-left: 1.2em;
+        }
+        a {
+            color: #004E6C;
+            word-break: break-all;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <h1>PSEF Submission Report</h1>
-    <p><strong>Submitted on:</strong> {{ created_at }}</p>
 
-    <h2>Programme Description</h2>
-    <p>{{ programme_description }}</p>
+<!-- Title Page -->
+<div class="title-page">
+    <h1>Programme Self-Evaluation Report</h1>
+    <p><strong>Programme:</strong> {{ programme_name if programme_name else 'N/A' }}</p>
+    <p><strong>Submitted:</strong> {{ created_at }}</p>
+    <p><strong>Prepared by:</strong> [Programme Team]</p>
+</div>
 
-    <h2>Pathways to TU Dublin - QA Evidence</h2>
-    <p>{{ pathways_qa }}</p>
+<div class="page-break"></div>
 
-    <h2>Pathways to TU Dublin - QE Evidence</h2>
-    <p>{{ pathways_qe }}</p>
+<!-- Table of Contents (Static for PoC) -->
+<h2>Table of Contents</h2>
+<ol>
+    <li>1. Programme Overview</li>
+    <li>2. Pathways to TU Dublin</li>
+    <li>3. Internationalisation</li>
+    <li>4. Evidence Files</li>
+</ol>
 
-    <h2>Internationalisation - QA Evidence</h2>
-    <p>{{ internationalisation_qa }}</p>
+<div class="page-break"></div>
 
-    <h2>Internationalisation - QE Evidence</h2>
-    <p>{{ internationalisation_qe }}</p>
+<!-- Section 1: Programme Overview -->
+<h2>1. Programme Overview</h2>
+<p><strong>Description:</strong></p>
+<p>{{ programme_description }}</p>
 
-    <h2>Evidence Files</h2>
-    {% if evidence_files %}
-        <ul>
-        {% for file in evidence_files %}
-            <li><a href="{{ url_root }}uploads/{{ file }}">{{ file }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No evidence files uploaded.</p>
-    {% endif %}
+<!-- Section 2: Pathways to TU Dublin -->
+<h2>2. Pathways to TU Dublin</h2>
+
+<h3>2.1 Quality Assurance (QA) Evidence</h3>
+<p>{{ pathways_qa }}</p>
+
+<h3>2.2 Quality Enhancement (QE) Evidence</h3>
+<p>{{ pathways_qe }}</p>
+
+<!-- Section 3: Internationalisation -->
+<h2>3. Internationalisation</h2>
+
+<h3>3.1 Quality Assurance (QA) Evidence</h3>
+<p>{{ internationalisation_qa }}</p>
+
+<h3>3.2 Quality Enhancement (QE) Evidence</h3>
+<p>{{ internationalisation_qe }}</p>
+
+<!-- Section 4: Evidence Files -->
+<h2>4. Evidence Files</h2>
+{% if evidence_files %}
+    <ul>
+    {% for file in evidence_files %}
+        <li><a href="{{ url_root }}uploads/{{ file }}">{{ file }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No evidence files were uploaded with this submission.</p>
+{% endif %}
+
 </body>
 </html>
+
 

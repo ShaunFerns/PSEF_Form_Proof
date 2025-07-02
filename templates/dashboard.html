@@ -8,27 +8,44 @@
         {% for entry in entries %}
             <div class="section-block">
                 <p><strong>Submitted on:</strong> {{ entry['created_at'] }}</p>
+                <p><strong>Status:</strong> {{ entry['status'] }}</p>
                 <p><strong>Programme Description:</strong> {{ entry['programme_description'] }}</p>
                 <p><strong>Pathways QA:</strong> {{ entry['pathways_qa'] }}</p>
                 <p><strong>Pathways QE:</strong> {{ entry['pathways_qe'] }}</p>
                 <p><strong>Internationalisation QA:</strong> {{ entry['internationalisation_qa'] }}</p>
                 <p><strong>Internationalisation QE:</strong> {{ entry['internationalisation_qe'] }}</p>
+
+                {% if entry['evidence_files'] %}
+                    <p><strong>Evidence Files:</strong>
+                        {% for file in entry['evidence_files'].split('; ') %}
+                            <a href="{{ url_for('uploaded_file', filename=file) }}" target="_blank">{{ file }}</a>{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                {% else %}
+                    <p><strong>Evidence Files:</strong> None uploaded.</p>
+                {% endif %}
+
+                <p>
+                    <a href="{{ url_for('download_report', entry_id=entry['id']) }}" target="_blank">
+                        <button>📄 Download Report (PDF)</button>
+                    </a>
+                    <a href="{{ url_for('download_zip', entry_id=entry['id']) }}">
+                        <button>🗂️ Download Evidence (ZIP)</button>
+                    </a>
+                </p>
             </div>
         {% endfor %}
     {% else %}
-        <p>No entries found yet.</p>
+        <p>No submissions yet.</p>
     {% endif %}
 </div>
 
 <div class="instructions">
-    <h2>Dashboard Help</h2>
-    <p>This dashboard lists all PSEF Learner Access submissions captured during the proof-of-concept stage for analysis, demonstration, and refinement of the pipeline.</p>
-    <p>Each entry includes:</p>
+    <h2>Dashboard Instructions</h2>
+    <p>Use this dashboard to view, download, and review submissions for the PSEF pilot pipeline. You can:</p>
     <ul>
-        <li>Programme Description (max 500 words)</li>
-        <li>Pathways QA/QE selections</li>
-        <li>Internationalisation QA/QE selections</li>
-        <li>Timestamp of submission</li>
+        <li>Download a PSER-style PDF report for each submission.</li>
+        <li>Download all evidence files as a ZIP archive for each submission.</li>
     </ul>
 </div>
 {% endblock %}
