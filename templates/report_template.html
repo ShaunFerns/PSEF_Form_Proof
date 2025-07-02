@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PSEF Submission Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; }
+        h1 { color: #004E6C; }
+        h2 { border-bottom: 1px solid #ccc; padding-bottom: 0.3rem; }
+        p { line-height: 1.6; }
+        ul { padding-left: 1.2rem; }
+        a { color: #004E6C; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <h1>PSEF Submission Report</h1>
+    <p><strong>Submitted on:</strong> {{ created_at }}</p>
+
+    <h2>Programme Description</h2>
+    <p>{{ programme_description }}</p>
+
+    <h2>Pathways to TU Dublin - QA Evidence</h2>
+    <p>{{ pathways_qa }}</p>
+
+    <h2>Pathways to TU Dublin - QE Evidence</h2>
+    <p>{{ pathways_qe }}</p>
+
+    <h2>Internationalisation - QA Evidence</h2>
+    <p>{{ internationalisation_qa }}</p>
+
+    <h2>Internationalisation - QE Evidence</h2>
+    <p>{{ internationalisation_qe }}</p>
+
+    <h2>Evidence Files</h2>
+    {% if evidence_files %}
+        <ul>
+        {% for file in evidence_files %}
+            <li><a href="{{ url_root }}uploads/{{ file }}">{{ file }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No evidence files uploaded.</p>
+    {% endif %}
+</body>
+</html>
+

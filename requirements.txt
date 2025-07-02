@@ -1,2 +1,10 @@
-Flask==3.0.2
+Flask==2.3.3
 gunicorn==21.2.0
+plotly==5.22.0
+weasyprint==60.1
+cairocffi==1.6.1
+pycparser==2.21
+tinycss2==1.2.1
+cssselect2==0.7.0
+kaleido==0.2.1
+pydyf==0.8.0
