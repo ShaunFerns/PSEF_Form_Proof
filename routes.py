@@ -11,7 +11,7 @@ from utils import allowed_file
 def register_routes(app):
     @app.route('/')
     def index():
-        return redirect(url_for('learner_access_form'))
+        return redirect(url_for('section4'))
 
     @app.route('/learner-access', methods=['GET', 'POST'])
     def learner_access_form():
@@ -270,4 +270,28 @@ def register_routes(app):
             as_attachment=True,
             download_name=f'PSEF_Evidence_Files_{entry_id}.zip'
         )
+
+    @app.route('/section4')
+    def section4():
+        return render_template('section4.html')
+
+    @app.route('/section4/1')
+    def section4_1():
+        return render_template('section4_1.html')
+
+    @app.route('/section4/2')
+    def section4_2():
+        return render_template('section4_2.html')
+
+    @app.route('/section4/3')
+    def section4_3():
+        return render_template('section4_3.html')
+
+    @app.route('/section4/4')
+    def section4_4():
+        return render_template('section4_4.html')
+
+    @app.route('/section4/5')
+    def section4_5():
+        return render_template('section4_5.html')
 

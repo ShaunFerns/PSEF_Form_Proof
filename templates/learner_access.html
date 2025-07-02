@@ -129,7 +129,7 @@
         </div>
 
         <!-- Draft Description Field -->
-        <div style="margin-top: 1rem;">
+        <div id="draft_desc_container" style="margin-top: 1rem; display: {{ 'block' if draft_description else 'none' }};">
             <label for="draft_description">
                 Draft Description (to help you identify this draft later):
             </label>
@@ -137,7 +137,7 @@
                    value="{{ draft_description }}">
         </div>
 
-        <button type="submit" name="action" value="save">💾 Save as Draft</button>
+        <button type="submit" name="action" value="save" id="save_draft_btn">💾 Save as Draft</button>
         <button type="submit" name="action" value="submit">✅ Submit</button>
     </form>
 </div>
@@ -156,6 +156,8 @@
 <script>
     const textarea = document.getElementById('programme_description');
     const wordCount = document.getElementById('word_count');
+    const saveDraftBtn = document.getElementById('save_draft_btn');
+    const draftContainer = document.getElementById('draft_desc_container');
 
     textarea.addEventListener('input', () => {
         const words = textarea.value.trim().split(/\s+/).filter(Boolean);
@@ -163,6 +165,13 @@
         if (words.length > 500) {
             textarea.value = words.slice(0, 500).join(' ');
             wordCount.textContent = "(500/500 words)";
+        }
+    });
+
+    saveDraftBtn.addEventListener('click', (e) => {
+        if (draftContainer.style.display === 'none') {
+            e.preventDefault();
+            draftContainer.style.display = 'block';
         }
     });
 </script>
